@@ -10,6 +10,7 @@
 (define-constant ERR_ZERO_DEPOSIT (err u104))
 (define-constant ERR_INSUFFICIENT_FUNDS (err u105))
 (define-constant ERR_BENEFICIARY_ALREADY_SET (err u106))
+(define-constant ERR_INVALID_BENEFICIARY (err u107))
 
 ;; Data structures
 (define-map vaults
@@ -158,6 +159,18 @@
   )
     ;; Check if vault exists
     (asserts! (vault-exists sender) ERR_NO_VAULT)
+    
+    ;; Validate beneficiary address
+    ;; Ensure beneficiary is not the same as owner
+    (asserts! (not (is-eq beneficiary-address sender)) ERR_INVALID_BENEFICIARY)
+    
+    ;; Ensure beneficiary is not already set or is the same
+    (asserts! (or
+        (is-none (get beneficiary vault))
+        (is-eq (some beneficiary-address) (get beneficiary vault))
+      )
+      ERR_BENEFICIARY_ALREADY_SET
+    )
     
     ;; Update vault with beneficiary
     (map-set vaults
