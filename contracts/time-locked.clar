@@ -1,7 +1,6 @@
 ;; C-Vault: Decentralized Time-Locked Asset Management
 ;; A time-locked vault contract for STX tokens
-;; Author: Claude
-;; Date: February 2025
+
 
 ;; Error codes
 (define-constant ERR_UNAUTHORIZED (err u100))
@@ -20,6 +19,13 @@
     unlock-height: uint,
     beneficiary: (optional principal)
   }
+)
+
+;; Helper functions
+
+;; Define our own max function since Clarity doesn't have a built-in max
+(define-private (get-max (a uint) (b uint))
+  (if (>= a b) a b)
 )
 
 ;; Read-only functions
@@ -69,7 +75,7 @@
       ;; If vault exists, update it
       (let (
         (new-balance (+ (get balance existing-vault) amount))
-        (max-unlock-height (max unlock-height (get unlock-height existing-vault)))
+        (max-unlock-height (get-max unlock-height (get unlock-height existing-vault)))
       )
         ;; Transfer STX to contract
         (try! (stx-transfer? amount sender (as-contract tx-sender)))
